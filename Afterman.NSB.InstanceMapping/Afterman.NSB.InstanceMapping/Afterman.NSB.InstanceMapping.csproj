@@ -65,7 +65,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Constants\NServiceBusSettings.cs" />
     <Compile Include="Features\FeatureInstanceMapping.cs" />
+    <Compile Include="Features\AutoRefresher.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repository\Concepts\InstanceMapping.cs" />
     <Compile Include="Repository\Maps\InstanceMappingMap.cs" />

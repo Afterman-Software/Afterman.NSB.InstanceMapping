@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Diagnostics;
+﻿using System.Configuration;
 using System.Linq;
 using NServiceBus;
 using NServiceBus.Features;
@@ -9,6 +6,7 @@ using NServiceBus.Routing;
 
 namespace Afterman.NSB.InstanceMapping.Features
 {
+    using Constants;
     using Repository;
     using Repository.Concepts;
 
@@ -24,34 +22,19 @@ namespace Afterman.NSB.InstanceMapping.Features
 
         protected override void Setup(FeatureConfigurationContext context)
         {
-            var instancesToLoad = new List<EndpointInstance>();
-            var nhibernateHelper = new NHibernateHelper();
-            var instanceMappings = nhibernateHelper.GetAll<InstanceMapping>();
-
-            RegisterCurrentEndpoint(context, instanceMappings, nhibernateHelper);
-
-            foreach (var instanceMapping in instanceMappings.Where(m => m.IsEnabled))
-            {
-                if (Debugger.IsAttached)
-                {
-                    Console.WriteLine(
-                        $"Registering mapping for '{instanceMapping.EndpointName}' at taget machine '{instanceMapping.TargetMachine}'");
-                }
-                instancesToLoad.Add(
-                    new EndpointInstance(instanceMapping.EndpointName).AtMachine(instanceMapping.TargetMachine));
-            }
-            if (!instancesToLoad.Any()) return;
-
             var endpointInstances = context.Settings.Get<EndpointInstances>();
-            endpointInstances.AddOrReplaceInstances("DefaultInstanceMappingKey", instancesToLoad);
+            var refresher = new AutoRefresher(endpointInstances);
+            context.RegisterStartupTask(refresher);
+            RegisterCurrentEndpoint(context);
         }
 
-        private void RegisterCurrentEndpoint(FeatureConfigurationContext context,
-            IEnumerable<InstanceMapping> instanceMappings, INHibernateHelper nHibernateHelper)
+        private void RegisterCurrentEndpoint(FeatureConfigurationContext context)
         {
-            var endpointLogicalAddress = (LogicalAddress)context.Settings.Get("NServiceBus.LogicalAddress");
+            var nHibernateHelper = new NHibernateHelper();
+            var instanceMappings = nHibernateHelper.GetAll<InstanceMapping>();
+            var endpointLogicalAddress = (LogicalAddress)context.Settings.Get(NServiceBusSettings.LogicalAddress);
             var endpointName = endpointLogicalAddress.EndpointInstance.Endpoint;
-            var machineName = endpointLogicalAddress.EndpointInstance.Properties["machine"];
+            var machineName = endpointLogicalAddress.EndpointInstance.Properties[NServiceBusSettings.Machine];
             if (!string.IsNullOrEmpty(AllowedServerPrefix) && !machineName.ToLower().Contains(AllowedServerPrefix)) return;
             if (instanceMappings.Any(x => x.EndpointName == endpointName && x.TargetMachine == machineName)) return;
 
