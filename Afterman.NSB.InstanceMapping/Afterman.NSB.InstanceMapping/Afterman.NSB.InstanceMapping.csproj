@@ -65,6 +65,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConfigurationContext.cs" />
     <Compile Include="Constants\NServiceBusSettings.cs" />
     <Compile Include="Features\FeatureInstanceMapping.cs" />
     <Compile Include="Features\AutoRefresher.cs" />

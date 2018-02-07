@@ -1,5 +1,4 @@
-﻿using System.Configuration;
-using System.Linq;
+﻿using System.Linq;
 using NServiceBus;
 using NServiceBus.Features;
 using NServiceBus.Routing;
@@ -18,8 +17,6 @@ namespace Afterman.NSB.InstanceMapping.Features
             EnableByDefault();
         }
 
-        private static readonly string AllowedServerPrefix = ConfigurationManager.AppSettings["AllowedServerPrefix"];
-
         protected override void Setup(FeatureConfigurationContext context)
         {
             var endpointInstances = context.Settings.Get<EndpointInstances>();
@@ -35,7 +32,8 @@ namespace Afterman.NSB.InstanceMapping.Features
             var endpointLogicalAddress = (LogicalAddress)context.Settings.Get(NServiceBusSettings.LogicalAddress);
             var endpointName = endpointLogicalAddress.EndpointInstance.Endpoint;
             var machineName = endpointLogicalAddress.EndpointInstance.Properties[NServiceBusSettings.Machine];
-            if (!string.IsNullOrEmpty(AllowedServerPrefix) && !machineName.ToLower().Contains(AllowedServerPrefix)) return;
+            if (!string.IsNullOrEmpty(ConfigurationContext.AllowedServerPrefix) &&
+                !machineName.ToLower().Contains(ConfigurationContext.AllowedServerPrefix)) return;
             if (instanceMappings.Any(x => x.EndpointName == endpointName && x.TargetMachine == machineName)) return;
 
             nHibernateHelper.Add(new InstanceMapping
