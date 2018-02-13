@@ -38,8 +38,8 @@ namespace Afterman.NSB.InstanceMapping.Features
         private List<EndpointInstance> LoadInstances()
         {
             var instancesToLoad = new List<EndpointInstance>();
-            var nhibernateHelper = new NHibernateHelper();
-            var instanceMappings = nhibernateHelper.GetAll<Repository.Concepts.InstanceMapping>();
+            var sqlHelper = new SqlHelper();
+            var instanceMappings = sqlHelper.GetAll();
 
             foreach (var instanceMapping in instanceMappings.Where(m => m.IsEnabled))
             {

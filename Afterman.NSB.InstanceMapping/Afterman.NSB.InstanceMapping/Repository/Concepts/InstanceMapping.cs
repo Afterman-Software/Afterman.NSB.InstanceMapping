@@ -2,9 +2,9 @@
 {
     public class InstanceMapping
     {
-        public virtual int Id { get; set; }
-        public virtual string EndpointName { get; set; }
-        public virtual string TargetMachine { get; set; }
-        public virtual bool IsEnabled { get; set; }
+        public int Id { get; set; }
+        public string EndpointName { get; set; }
+        public string TargetMachine { get; set; }
+        public bool IsEnabled { get; set; }
     }
 }

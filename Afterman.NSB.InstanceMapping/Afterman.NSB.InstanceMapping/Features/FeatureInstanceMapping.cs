@@ -27,16 +27,14 @@ namespace Afterman.NSB.InstanceMapping.Features
 
         private void RegisterCurrentEndpoint(FeatureConfigurationContext context)
         {
-            var nHibernateHelper = new NHibernateHelper();
-            var instanceMappings = nHibernateHelper.GetAll<InstanceMapping>();
+            var sqlHelper = new SqlHelper();
+            var instanceMappings = sqlHelper.GetAll();
             var endpointLogicalAddress = (LogicalAddress)context.Settings.Get(NServiceBusSettings.LogicalAddress);
             var endpointName = endpointLogicalAddress.EndpointInstance.Endpoint;
             var machineName = endpointLogicalAddress.EndpointInstance.Properties[NServiceBusSettings.Machine];
-            if (!string.IsNullOrEmpty(ConfigurationContext.AllowedServerPrefix) &&
-                !machineName.ToLower().Contains(ConfigurationContext.AllowedServerPrefix)) return;
             if (instanceMappings.Any(x => x.EndpointName == endpointName && x.TargetMachine == machineName)) return;
 
-            nHibernateHelper.Add(new InstanceMapping
+            sqlHelper.Add(new InstanceMapping
             {
                 EndpointName = endpointName,
                 TargetMachine = machineName,
