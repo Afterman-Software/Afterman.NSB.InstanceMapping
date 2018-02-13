@@ -19,6 +19,7 @@ namespace Afterman.NSB.InstanceMapping.Features
 
         protected override void Setup(FeatureConfigurationContext context)
         {
+            SqlHelper.CreateTableIfNotExists();
             var endpointInstances = context.Settings.Get<EndpointInstances>();
             var refresher = new AutoRefresher(endpointInstances);
             context.RegisterStartupTask(refresher);
@@ -27,14 +28,13 @@ namespace Afterman.NSB.InstanceMapping.Features
 
         private void RegisterCurrentEndpoint(FeatureConfigurationContext context)
         {
-            var sqlHelper = new SqlHelper();
-            var instanceMappings = sqlHelper.GetAll();
+            var instanceMappings = SqlHelper.GetAll();
             var endpointLogicalAddress = (LogicalAddress)context.Settings.Get(NServiceBusSettings.LogicalAddress);
             var endpointName = endpointLogicalAddress.EndpointInstance.Endpoint;
             var machineName = endpointLogicalAddress.EndpointInstance.Properties[NServiceBusSettings.Machine];
             if (instanceMappings.Any(x => x.EndpointName == endpointName && x.TargetMachine == machineName)) return;
 
-            sqlHelper.Add(new InstanceMapping
+            SqlHelper.Add(new InstanceMapping
             {
                 EndpointName = endpointName,
                 TargetMachine = machineName,

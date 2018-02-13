@@ -38,8 +38,7 @@ namespace Afterman.NSB.InstanceMapping.Features
         private List<EndpointInstance> LoadInstances()
         {
             var instancesToLoad = new List<EndpointInstance>();
-            var sqlHelper = new SqlHelper();
-            var instanceMappings = sqlHelper.GetAll();
+            var instanceMappings = SqlHelper.GetAll();
 
             foreach (var instanceMapping in instanceMappings.Where(m => m.IsEnabled))
             {
