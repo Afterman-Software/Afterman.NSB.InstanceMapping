@@ -10,7 +10,8 @@ namespace Afterman.NSB.InstanceMapping.Repository
 
     public static class SqlHelper
     {
-        private static readonly string ConnectionString = ConfigurationManager.ConnectionStrings["NServiceBus/Persistence"]?.ConnectionString;
+        private static readonly string CustomConnectionStringKey = ConfigurationManager.AppSettings["ConnectionStringKey"];
+        private const string DefaultConnectionStringKey = "NServiceBus/Persistence";
 
         public static void CreateTableIfNotExists()
         {
@@ -18,9 +19,16 @@ namespace Afterman.NSB.InstanceMapping.Repository
                 CreateInstanceMappingTable();
         }
 
+        private static string GetConnectionString()
+        {
+            return string.IsNullOrEmpty(CustomConnectionStringKey)
+                ? ConfigurationManager.ConnectionStrings[DefaultConnectionStringKey]?.ConnectionString
+                : ConfigurationManager.ConnectionStrings[CustomConnectionStringKey]?.ConnectionString;
+        }
+
         private static bool InstanceMappingTableExists()
         {
-            using (var connection = new SqlConnection(ConnectionString))
+            using (var connection = new SqlConnection(GetConnectionString()))
             {
                 connection.Open();
                 var command =
@@ -33,7 +41,7 @@ namespace Afterman.NSB.InstanceMapping.Repository
 
         private static void CreateInstanceMappingTable()
         {
-            using (var conn = new SqlConnection(ConnectionString))
+            using (var conn = new SqlConnection(GetConnectionString()))
             using (var cmd = new SqlCommand())
             {
                 cmd.Connection = conn;
@@ -55,7 +63,7 @@ namespace Afterman.NSB.InstanceMapping.Repository
 
         public static void Add(InstanceMapping instanceMapping)
         {
-            using (var conn = new SqlConnection(ConnectionString))
+            using (var conn = new SqlConnection(GetConnectionString()))
             using (var cmd = new SqlCommand())
             {
                 cmd.Connection = conn;
@@ -74,7 +82,7 @@ namespace Afterman.NSB.InstanceMapping.Repository
 
         public static IEnumerable<InstanceMapping> GetAll()
         {
-            using (var connection = new SqlConnection(ConnectionString))
+            using (var connection = new SqlConnection(GetConnectionString()))
             {
                 connection.Open();
 
