@@ -10,12 +10,14 @@ using NServiceBus.Routing;
 
 namespace Afterman.NSB.InstanceMapping.Features
 {
+    using NServiceBus.Logging;
     using Repository;
 
     public class AutoRefresher : FeatureStartupTask
     {
         private readonly EndpointInstances _endpointInstances;
         private Timer _timer;
+        private ILog _log = LogManager.GetLogger<AutoRefresher>();
 
         public AutoRefresher(EndpointInstances endpointInstances)
         {
@@ -24,16 +26,29 @@ namespace Afterman.NSB.InstanceMapping.Features
 
         protected override Task OnStart(IMessageSession session)
         {
+            _log.Info("Initializing DatabaseInstanceMapping AutoRefresher");
+            // load here without any error handling because we will fail later in initialization if InstanceMappings aren't present
+            _endpointInstances.AddOrReplaceInstances("InstanceMappings", LoadInstances());
+
             _timer = new Timer(
                 callback: _ =>
                 {
-                    _endpointInstances.AddOrReplaceInstances("DefaultInstanceMappingKey", LoadInstances());
+                    try
+                    {
+                        _log.Info("Refreshing endpoint instances from the database");
+                        _endpointInstances.AddOrReplaceInstances("InstanceMappings", LoadInstances());
+                    }
+                    catch (Exception e)
+                    {
+                        _log.Error("", e);
+                    }
                 },
                 state: null,
-                dueTime: TimeSpan.FromSeconds(30),
-                period: TimeSpan.FromSeconds(30));
+                dueTime: TimeSpan.FromSeconds(30), // load after 30 seconds
+                period: TimeSpan.FromSeconds(30)); // repeat every 30 seconds
             return Task.CompletedTask;
         }
+
 
         private List<EndpointInstance> LoadInstances()
         {
