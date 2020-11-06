@@ -17,7 +17,7 @@ namespace Afterman.NSB.InstanceMapping.Features
     {
         private readonly EndpointInstances _endpointInstances;
         private Timer _timer;
-        private ILog _log = LogManager.GetLogger<AutoRefresher>();
+        private readonly ILog _log = LogManager.GetLogger<AutoRefresher>();
 
         public AutoRefresher(EndpointInstances endpointInstances)
         {
@@ -60,7 +60,7 @@ namespace Afterman.NSB.InstanceMapping.Features
                 if (Debugger.IsAttached)
                 {
                     Console.WriteLine(
-                        $"Registering mapping for '{instanceMapping.EndpointName}' at taget machine '{instanceMapping.TargetMachine}'");
+                        $"Registering mapping for '{instanceMapping.EndpointName}' at target machine '{instanceMapping.TargetMachine}'");
                 }
                 instancesToLoad.Add(
                     new EndpointInstance(instanceMapping.EndpointName).AtMachine(instanceMapping.TargetMachine));
