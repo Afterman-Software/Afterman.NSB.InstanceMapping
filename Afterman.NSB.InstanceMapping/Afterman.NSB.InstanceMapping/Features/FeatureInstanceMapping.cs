@@ -1,11 +1,8 @@
 ﻿using System.Linq;
-using NServiceBus;
 using NServiceBus.Features;
-using NServiceBus.Routing;
 
 namespace Afterman.NSB.InstanceMapping.Features
 {
-    using Constants;
     using Repository;
     using Repository.Concepts;
 
@@ -19,19 +16,23 @@ namespace Afterman.NSB.InstanceMapping.Features
 
         protected override void Setup(FeatureConfigurationContext context)
         {
+            if (!context.IsMsmqTransport() || context.IsSendOnlyEndpoint()) return;
+
             SqlHelper.CreateTableIfNotExists();
-            var endpointInstances = context.Settings.Get<EndpointInstances>();
+            
+            var endpointInstances = context.GetEndpointInstances();
             var refresher = new AutoRefresher(endpointInstances);
             context.RegisterStartupTask(refresher);
+
             RegisterCurrentEndpoint(context);
         }
 
         private void RegisterCurrentEndpoint(FeatureConfigurationContext context)
         {
+            var endpointName = context.EndpointName();
+            var machineName = context.MachineName();
+            
             var instanceMappings = SqlHelper.GetAll();
-            var endpointLogicalAddress = (LogicalAddress)context.Settings.Get(NServiceBusSettings.LogicalAddress);
-            var endpointName = endpointLogicalAddress.EndpointInstance.Endpoint;
-            var machineName = endpointLogicalAddress.EndpointInstance.Properties[NServiceBusSettings.Machine];
             if (instanceMappings.Any(x => x.EndpointName == endpointName && x.TargetMachine == machineName)) return;
 
             SqlHelper.Add(new InstanceMapping

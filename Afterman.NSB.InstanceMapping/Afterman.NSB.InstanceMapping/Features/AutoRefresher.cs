@@ -27,6 +27,7 @@ namespace Afterman.NSB.InstanceMapping.Features
         protected override Task OnStart(IMessageSession session)
         {
             _log.Info("Initializing DatabaseInstanceMapping AutoRefresher");
+
             // load here without any error handling because we will fail later in initialization if InstanceMappings aren't present
             _endpointInstances.AddOrReplaceInstances("InstanceMappings", LoadInstances());
 
