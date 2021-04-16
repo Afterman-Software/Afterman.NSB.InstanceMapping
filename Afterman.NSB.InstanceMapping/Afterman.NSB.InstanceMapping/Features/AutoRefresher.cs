@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Afterman.NSB.InstanceMapping.Constants;
 using NServiceBus;
 using NServiceBus.Features;
 using NServiceBus.Routing;
@@ -29,7 +30,7 @@ namespace Afterman.NSB.InstanceMapping.Features
             _log.Info("Initializing DatabaseInstanceMapping AutoRefresher");
 
             // load here without any error handling because we will fail later in initialization if InstanceMappings aren't present
-            _endpointInstances.AddOrReplaceInstances("InstanceMappings", LoadInstances());
+            _endpointInstances.AddOrReplaceInstances(SourceKey.InstanceMappings, LoadInstances());
 
             _timer = new Timer(
                 callback: _ =>
@@ -37,11 +38,11 @@ namespace Afterman.NSB.InstanceMapping.Features
                     try
                     {
                         _log.Info("Refreshing endpoint instances from the database");
-                        _endpointInstances.AddOrReplaceInstances("InstanceMappings", LoadInstances());
+                        _endpointInstances.AddOrReplaceInstances(SourceKey.InstanceMappings, LoadInstances());
                     }
                     catch (Exception e)
                     {
-                        _log.Error("", e);
+                        _log.Error(string.Empty, e);
                     }
                 },
                 state: null,
@@ -51,7 +52,7 @@ namespace Afterman.NSB.InstanceMapping.Features
         }
 
 
-        private List<EndpointInstance> LoadInstances()
+        public List<EndpointInstance> LoadInstances()
         {
             var instancesToLoad = new List<EndpointInstance>();
             var instanceMappings = SqlHelper.GetAll();

@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using Afterman.NSB.InstanceMapping.Constants;
 using NServiceBus.Features;
 
 namespace Afterman.NSB.InstanceMapping.Features
@@ -22,6 +23,7 @@ namespace Afterman.NSB.InstanceMapping.Features
             
             var endpointInstances = context.GetEndpointInstances();
             var refresher = new AutoRefresher(endpointInstances);
+            endpointInstances.AddOrReplaceInstances(SourceKey.InstanceMappings, refresher.LoadInstances());
             context.RegisterStartupTask(refresher);
 
             RegisterCurrentEndpoint(context);
